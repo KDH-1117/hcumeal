@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>현대청운고 급식 식단</title>
+    <style>
+        :root {
+            --main: #003a7a;
+            --bg: #ffffff;
+            --tab-bg: #f1f3f5;
+            --text-dark: #2d3436;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 50px 20px 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: var(--main);
+            letter-spacing: -1.2px;
+        }
+
+        .date-display {
+            margin-top: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--tab-bg);
+            padding: 6px;
+            margin: 10px 20px;
+            border-radius: 20px;
+            gap: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: none;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #a0a0a0;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tab.active {
+            background: white;
+            color: var(--main);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .menu-content {
+            padding: 40px 25px;
+            min-height: 260px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .menu-item {
+            font-size: 1.25rem;
+            margin-bottom: 14px;
+            font-weight: 600;
+            color: #222;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .kcal-badge {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #ff6b6b;
+            background: #fff5f5;
+            padding: 8px 18px;
+            border-radius: 50px;
+            display: inline-block;
+            align-self: center;
+        }
+
+        .footer {
+            padding: 30px 20px;
+            background: #fafafa;
+            border-top: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .footer-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #999;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .date-input {
+            border: 2px solid #eee;
+            padding: 12px;
+            border-radius: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--main);
+            background: white;
+            width: 85%;
+            outline: none;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 25px;
+            box-sizing: border-box;
+        }
+
+        .status { color: #ddd; font-weight: 700; margin-top: 60px; }
+
+        .shortcut-btn {
+            display: block;
+            width: 85%;
+            margin: 0 auto;
+            padding: 14px;
+            background-color: #000000;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: background-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        .shortcut-btn:hover {
+            background-color: #333333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>현대청운고등학교</h1>
+        <div id="dateText" class="date-display"></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab" id="t1" onclick="changeMeal(1)">조식</button>
+        <button class="tab active" id="t2" onclick="changeMeal(2)">중식</button>
+        <button class="tab" id="t3" onclick="changeMeal(3)">석식</button>
+    </div>
+
+    <div id="displayArea" class="menu-content">
+        <div class="status">식단 데이터를 연결합니다...</div>
+    </div>
+
+    <div class="footer">
+        <span class="footer-label">📅 다른 날짜 식단 보기</span>
+        <input type="date" id="dateInput" class="date-input" onchange="loadMeal()">
+        
+        <a href="https://www.icloud.com/shortcuts/f66c54d0837c40ce88ef0523d3b0edb4" target="_blank" class="shortcut-btn">단축어 다운로드하기</a>
+    </div>
+</div>
+
+<script>
+    const AT_CODE = "H10"; 
+    const SC_CODE = "7480085";
+    let mealType = 2;
+
+    window.onload = function() {
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const d = String(today.getDate()).padStart(2, '0');
+        document.getElementById('dateInput').value = `${y}-${m}-${d}`;
+        loadMeal();
+    };
+
+    window.renderData = function(json) {
+        const area = document.getElementById('displayArea');
+        if (json && json.mealServiceDietInfo) {
+            const row = json.mealServiceDietInfo[1].row[0];
+            
+            const menu = row.DDISH_NM
+                .replace(/\s*\([0-9.]+\)/g, '') 
+                .split('<br/>')
+                .filter(i => i.trim() !== "")
+                .map(i => `<div class="menu-item">${i.trim()}</div>`)
+                .join('');
+            
+            area.innerHTML = `${menu}<div class="kcal-badge">🔥 ${row.CAL_INFO}</div>`;
+        } else {
+            area.innerHTML = '<div class="status">해당 날짜에 등록된 식단이 없습니다.</div>';
+        }
+    };
+
+    function loadMeal() {
+        const area = document.getElementById('displayArea');
+        const dateVal = document.getElementById('dateInput').value;
+        if (!dateVal) return;
+
+        area.innerHTML = '<div class="status">잠시만 기다려주세요...</div>';
+
+        const d = new Date(dateVal);
+        const dayList = ['일', '월', '화', '수', '목', '금', '토'];
+        document.getElementById('dateText').innerText = `${dateVal.replace(/-/g, '.')} (${dayList[d.getDay()]})`;
+
+        const ymd = dateVal.replace(/-/g, '');
+        const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&callback=renderData&ATPT_OFCDC_SC_CODE=${AT_CODE}&SD_SCHUL_CODE=${SC_CODE}&MLSV_YMD=${ymd}&MMEAL_SC_CODE=${mealType}`;
+
+        const old = document.getElementById('api-script');
+        if (old) old.remove();
+
+        const s = document.createElement('script');
+        s.id = 'api-script';
+        s.src = url;
+        document.body.appendChild(s);
+    }
+
+    function changeMeal(type) {
+        mealType = type;
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach((t, i) => t.classList.toggle('active', i === (type - 1)));
+        loadMeal();
+    }
+</script>
+
+</body>
+</html>
